@@ -21,6 +21,7 @@ class Model:
         self.function = function
         c = self.function.__code__
         self.function_input_names = list(c.co_varnames[1 : c.co_argcount])
+        print("self.function_input_names: ", self.function_input_names)
         if not param_names:
             self.param_names = self.function_input_names
         else:

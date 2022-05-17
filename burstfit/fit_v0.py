@@ -8,7 +8,6 @@ from burstfit.curvefit import CurveFit
 from burstfit.mcmc import MCMC
 from burstfit.utils.math import tests, transform_parameters
 from burstfit.utils.plotter import plot_1d_fit, plot_2d_fit
-from burstfit.utils.functions import model_free_4, model_free
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +41,6 @@ class BurstFit:
         tsamp=None,
         clip_fac=None,
         outname=None,
-        #comp_num = None, 
         mask=np.array([False]),
         mcmcfit=False,
         other_params=np.array([]),
@@ -55,7 +53,6 @@ class BurstFit:
         self.fch1 = fch1
         self.tsamp = tsamp
         self.comp_num = 1
-        #self.comp_num = comp_num
         self.profile_params = {}
         self.spectra_params = {}
         self.other_params = other_params
@@ -83,7 +80,6 @@ class BurstFit:
         self.mcmcfit = mcmcfit
         self.mcmc = None
         self.off_pulse_ts_std = None
-        self.bic = None 
 
     @property
     def ncomponents(self):
@@ -297,106 +293,6 @@ class BurstFit:
                 param_names=self.profile_param_names,
             )
 
-#     def initial_spectrafit(self, plot=False, bounds=[]):
-#         """
-#         Perform initial spectra fit on the spectra.
-
-#         Args:
-#             plot: To plot the fitting results.
-#             bounds: Bounds for fitting.
-
-#         Returns:
-
-#         """
-#         logger.info(f"Running spectra profile fit for component: {self.comp_num}")
-#         xdata = np.arange(self.nf)
-#         ydata = self.spectra
-#         if not np.any(bounds):
-#             if self.sgram_model.spectra_model.nparams == 2:
-#                 bounds = ([xdata.min(), 0], [xdata.max(), xdata.max()])
-#             else:
-#                 bounds = [-np.inf, np.inf]
-#         logger.debug(f"Bounds for spectra fit are: {bounds}")
-#         cf = CurveFit(
-#             function=self.sgram_model.spectra_model.function,
-#             xdata=xdata,
-#             ydata=ydata,
-#             bounds=bounds,
-#             retry=False,
-#             maxfev = None,
-#         )
-#         popt, err = cf.run_fit()
-#         self.spectra_params[self.comp_num] = {"popt": list(popt), "perr": err}
-#         self.spectra_bounds[self.comp_num] = bounds
-
-#         logger.info(f"Converged parameters (spectra fit) are:")
-#         for i, p in enumerate(self.spectra_params[self.comp_num]["popt"]):
-#             logger.info(f"{self.spectra_param_names[i]}: {p} +- {err[i]}")
-
-#         if plot:
-#             plot_1d_fit(
-#                 xdata,
-#                 ydata,
-#                 self.sgram_model.spectra_model.function,
-#                 self.spectra_params[self.comp_num]["popt"],
-#                 xlabel="Channels",
-#                 ylabel="Amp",
-#                 title="Initial fit to spectra",
-#                 param_names=self.spectra_param_names,
-#             )
-
-
-#     def initial_spectrafit(self, plot=False, bounds=[]):
-#         """
-#         Perform initial spectra fit on the spectra.
-
-#         Args:
-#             plot: To plot the fitting results.
-#             bounds: Bounds for fitting.
-
-#         Returns:
-
-#         """
-#         logger.info(f"Running spectra profile fit for component: {self.comp_num}")
-#         xdata = np.arange(self.nf)
-#         ydata = self.spectra
-#         if not np.any(bounds):
-#             if self.sgram_model.spectra_model.nparams == 2:
-#                 bounds = ([xdata.min(), 0], [xdata.max(), xdata.max()])
-#             else:
-#                 bounds = [-np.inf, np.inf]
-#         logger.debug(f"Bounds for spectra fit are: {bounds}")
-#         cf = CurveFit(
-#             function=self.sgram_model.spectra_model.function,
-#             xdata=xdata,
-#             ydata=ydata,
-#             bounds=bounds,
-#             retry=False,
-#             maxfev = None,
-#         )
-#         popt, err = cf.run_fit()
-#         self.spectra_params[self.comp_num] = {"popt": list(popt), "perr": err}
-# #         popt = cf.run_fit()[0]
-# #         self.spectra_params[self.comp_num] = {"popt": list(popt)}
-#         self.spectra_bounds[self.comp_num] = bounds
-
-#         logger.info(f"Converged parameters (spectra fit) are:")
-#         for i, p in enumerate(self.spectra_params[self.comp_num]["popt"]):
-#             logger.info(f"{self.spectra_param_names[i]}: {p} +- {err[i]}")
-
-#         if plot:
-#             plot_1d_fit(
-#                 xdata,
-#                 ydata,
-#                 self.sgram_model.spectra_model.function,
-#                 self.spectra_params[self.comp_num]["popt"],
-#                 xlabel="Channels",
-#                 ylabel="Amp",
-#                 title="Initial fit to spectra",
-#                 param_names=self.spectra_param_names,
-#             )
- 
-
     def initial_spectrafit(self, plot=False, bounds=[]):
         """
         Perform initial spectra fit on the spectra.
@@ -411,44 +307,22 @@ class BurstFit:
         logger.info(f"Running spectra profile fit for component: {self.comp_num}")
         xdata = np.arange(self.nf)
         ydata = self.spectra
-        
-        # measure spectrum if use model-free, assign errors to by ones. 
-        print(self.sgram_model.spectra_model.function)
-        print(ydata)
-        
-        if self.sgram_model.spectra_model.function == model_free_4:
-            c1, c2, c3, c4 = ydata
-            err = np.zeros(len(ydata))
-            self.spectra_params[self.comp_num] = {"popt": list([c1, c2, c3, c4]), "perr": err}
-
-            #c1, c2, c3, c4 = ydata
-            #err = np.zeros(len(ydata) - 1)
-            #self.spectra_params[self.comp_num] = {"popt": list([c1, c2, c3]), "perr": err} # c4 degenerat
-        
-        elif self.sgram_model.spectra_model.function == model_free:
-            c = ydata
-            err = np.zeros(len(ydata))
-            self.spectra_params[self.comp_num] = {"popt": list(c), "perr": err}
-        
-        else:
-            if not np.any(bounds):
-                if self.sgram_model.spectra_model.nparams == 2:
-                    bounds = ([xdata.min(), 0], [xdata.max(), xdata.max()])
-                else:
-                    bounds = [-np.inf, np.inf]
-            logger.debug(f"Bounds for spectra fit are: {bounds}")
-            cf = CurveFit(
-                function=self.sgram_model.spectra_model.function,
-                xdata=xdata,
-                ydata=ydata,
-                bounds=bounds,
-                retry=False,
-                maxfev = None,
-            )
-            popt, err = cf.run_fit()
-            self.spectra_params[self.comp_num] = {"popt": list(popt), "perr": err}
-            self.spectra_bounds[self.comp_num] = bounds
-        
+        if not np.any(bounds):
+            if self.sgram_model.spectra_model.nparams == 2:
+                bounds = ([xdata.min(), 0], [xdata.max(), xdata.max()])
+            else:
+                bounds = [-np.inf, np.inf]
+        logger.debug(f"Bounds for spectra fit are: {bounds}")
+        cf = CurveFit(
+            function=self.sgram_model.spectra_model.function,
+            xdata=xdata,
+            ydata=ydata,
+            bounds=bounds,
+            retry=False,
+        )
+        popt, err = cf.run_fit()
+        self.spectra_params[self.comp_num] = {"popt": list(popt), "perr": err}
+        self.spectra_bounds[self.comp_num] = bounds
 
         logger.info(f"Converged parameters (spectra fit) are:")
         for i, p in enumerate(self.spectra_params[self.comp_num]["popt"]):
@@ -465,10 +339,6 @@ class BurstFit:
                 title="Initial fit to spectra",
                 param_names=self.spectra_param_names,
             )
-                
-            
-            
-            
 
     def sgram_fit(self, plot=False, bounds=[-np.inf, np.inf]):
         """
@@ -571,8 +441,6 @@ class BurstFit:
         self,
         plot=True,
         max_ncomp=5,
-        fix_ncomp=False,
-        ncomp=1,
         profile_bounds=[],
         spectra_bounds=[],
         sgram_bounds=[-np.inf, np.inf],
@@ -586,8 +454,6 @@ class BurstFit:
             profile_bounds: Bounds for initial spectra fit
             plot: to plot the fitting results.
             max_ncomp: maximum number of components to fit.
-            fix_ncomp: whether or not to force a number of components. 
-            ncomp: force to fit at this number of components. 
             sgram_bounds: bounds on spectrogram fit.
             **mcmc_kwargs: arguments for mcmc
 
@@ -601,7 +467,6 @@ class BurstFit:
                 "On pulse region looks like noise. Check candidate parameters"
             )
 
-        
         while self.ncomponents < max_ncomp:
             if np.any(profile_bounds):
                 logger.warning(
@@ -618,25 +483,17 @@ class BurstFit:
                 sgram_bounds=sgram_bounds,
             )
             test_res = self.run_tests
-            if test_res and not fix_ncomp:
+            if test_res:
                 logger.info(
                     "On pulse residual looks like noise. "
                     "Terminating individual component fitting."
                 )
                 break
-            
             self.comp_num += 1
 
-        if self.comp_num > max_ncomp and not fix_ncomp:
+        if self.comp_num > max_ncomp:
             logger.info(
                 "Max number of components reached. "
-                "Terminated individual component fitting."
-            )
-            self.comp_num -= 1
-        
-        if self.comp_num > ncomp and fix_ncomp:
-            logger.info(
-                "Fixed component reached. "
                 "Terminated individual component fitting."
             )
             self.comp_num -= 1
@@ -836,31 +693,7 @@ class BurstFit:
         )
         logger.info(f"Reduced chi-square value of fit is: {reduced_chi_squared}")
         return reduced_chi_squared
-    
-#     def BIC(L, k, n):
-#         """
-#         L: likelihood
-#         k: model parameter number
-#         n: data sample size 
-#         """
-#         return -2*np.log(L) + k * np.log(n) 
 
-    def BIC(self, lnL, k, n):
-        """
-        Bayesian information criterion 
-        L: likelihood
-        k: model free parameter number
-        n: data sample size 
-        """
-#         model_param = []
-#         for i in range(1, self.comp_num + 1):
-#           model_param += self.sgram_params['all'][i]['popt'] 
-        
-#         lnL = MCMC.lnlk(self, model_param)
-        
-        self.bic = -2 * lnL + k * np.log(n) 
-    
-    
     @property
     def model(self):
         """
@@ -942,6 +775,3 @@ class BurstFit:
                     params, mapping, self.param_names
                 )
         return self.physical_params
-    
-
-    

@@ -35,7 +35,6 @@ class CurveFit:
         bounds=[-np.inf, np.inf],
         p0=None,
         retry=False,
-        maxfev=5000, # increase iteration
         retry_frac_runtimeerror=0.9,
         retry_frac_infinite_err=0.2,
     ):
@@ -44,7 +43,6 @@ class CurveFit:
         self.ydata = ydata
         self.bounds = bounds
         self.retry = retry
-        self.maxfev = maxfev # increase iteration
         self.retry_frac_runtimeerror = retry_frac_runtimeerror
         self.retry_frac_infinite_err = retry_frac_infinite_err
         self.p0 = p0
@@ -85,12 +83,12 @@ class CurveFit:
                     np.max([p0_1, p0_2], axis=0),
                 )
                 popt, err = self.cf()
-#                 assert (
-#                     np.isinf(err).sum() == 0
-#                 ), "Errors are still not finite. Terminating."
+                assert (
+                    np.isinf(err).sum() == 0
+                ), "Errors are still not finite. Terminating."
         else:
             popt, err = self.cf()
-#             assert np.isinf(err).sum() == 0, "Fit errors are not finite. Terminating."
+            assert np.isinf(err).sum() == 0, "Fit errors are not finite. Terminating."
         return popt, err
 
     def cf(self):
@@ -103,25 +101,12 @@ class CurveFit:
 
         """
         logger.debug(f"Bounds for the fit are: {self.bounds}")
-        
-        if self.maxfev == None:
-            popt, pcov = curve_fit(
-                self.function,
-                xdata=self.xdata,
-                ydata=self.ydata,
-                p0=self.p0,
-                bounds=self.bounds,
-            )
-            
-        else:
-            popt, pcov = curve_fit(
-                self.function,
-                xdata=self.xdata,
-                ydata=self.ydata,
-                p0=self.p0,
-                bounds=self.bounds,
-                maxfev = self.maxfev,
-            )
-       
+        popt, pcov = curve_fit(
+            self.function,
+            xdata=self.xdata,
+            ydata=self.ydata,
+            p0=self.p0,
+            bounds=self.bounds,
+        )
         err = np.sqrt(np.diag(pcov))
         return popt, err

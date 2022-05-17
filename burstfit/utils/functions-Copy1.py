@@ -24,7 +24,6 @@ def gauss(x, S, mu, sigma):
         -(1 / 2) * ((x - mu) / sigma) ** 2
     )
 
-
 def gauss2(x, S1, mu1, sigma1, S2, mu2, sigma2):
     """
     Gaussian function with area S
@@ -38,12 +37,14 @@ def gauss2(x, S1, mu1, sigma1, S2, mu2, sigma2):
     Returns:
 
     """
-    return ((S1 / (np.sqrt(2 * np.pi) * sigma1)) * np.exp(
+    return (S1 / (np.sqrt(2 * np.pi) * sigma1)) * np.exp(
         -(1 / 2) * ((x - mu1) / sigma1) ** 2) + 
         (S2 / (np.sqrt(2 * np.pi) * sigma2)) * np.exp(
-        -(1 / 2) * ((x - mu2) / sigma2) ** 2))
+        -(1 / 2) * ((x - mu2) / sigma2) ** 2)
 
     
+
+
 def gauss_2d(x, amplitude, x0, y0, sigma_x, sigma_y, offset, theta):
     """ 
     Args:
@@ -167,11 +168,11 @@ def pulse_fn2(t, S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2):
     Returns:
 
     """
-    if (np.array([S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2]) < 0).sum() > 0:
+    if (np.array([S, mu1, sigma1, tau1, S2, mu2, sigma2, tau2]) < 0).sum() > 0:
         return np.zeros(len(t))
     if sigma1 / tau1 > 6:
         p1 = gauss(t, S1, mu1, sigma1)
-        print("comp 1: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+        print("sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
     else:
         A = S1 / (2 * tau1)
         B = np.exp((1 / 2) * (sigma1 / tau1) ** 2)
@@ -183,7 +184,7 @@ def pulse_fn2(t, S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2):
         
     if sigma2 / tau2 > 6:
         p2 = gauss(t, S2, mu2, sigma2)
-        print("comp 2: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+        print("sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
     else:
         A = S2 / (2 * tau2)
         B = np.exp((1 / 2) * (sigma2 / tau2) ** 2)
@@ -243,49 +244,13 @@ def pulse_fn_vec(t, S, mu, sigma, tau):
     return pulse
 
 
-def model_free(x, *c):
+def no_model(x, c):
     """
     No model.
     returns a constant for each channel x.
     c: array of length(x) 
     """
-    print('c, x: ', c, x)
-    #assert len(c[0]) == len(x) 
-    return np.array(c)
-
-
-def model_free_4(x, c0, c1, c2, c3):
-    """
-    No model. 4 channels
-    returns a constant for each channel x.
-    c: array of length(x) 
-    """
-    return np.array([c0, c1, c2, c3])
-
-# def model_free_4(x, c1, c2, c3):
-#     """
-#     No model. 4 channels
-#     returns a constant for each channel x.
-#     c: array of length(x) 
-#     """
-#     c4 = 2 * (1 - 0.5 * c1 - c2 - c3)
-#     return np.array([c1, c2, c3, c4])
-
-
-def power_law(x, alpha, x0):
-    """
-    Power law function 
-
-    Args:
-        x: input array to evaluate the function
-        A: scaling factor
-        a: power-law index
-
-    Returns:
-
-    """
-    return A * x ** alpha 
-    
+    return c 
         
 
 def sgram_fn(

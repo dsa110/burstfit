@@ -280,7 +280,8 @@ def plot_me(datar, xlabel=None, ylabel=None, title=None):
     Returns:
 
     """
-    with plt.style.context(["notebook"]):
+    #with plt.style.context(["notebook"]):
+    with plt.style.context(["seaborn-notebook"]): # Ge Chen 
         if len(datar.shape) == 1:
             plt.plot(datar)
         else:

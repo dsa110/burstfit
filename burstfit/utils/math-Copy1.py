@@ -102,7 +102,3 @@ def transform_parameters(params, mapping, param_names):
             param, m, a, err, m_err, a_err
         )
     return physical_dict
-
-
-def snr(data, noise):
-    snr = max(data) / noise

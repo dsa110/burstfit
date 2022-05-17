@@ -391,3 +391,17 @@ class MCMC:
             logger.warning(
                 f"Not enough valid autocorrelation values to plot. Not making autocorrelation plot."
             )
+        
+        
+    def BIC(self, k, n):
+        """
+        Bayesian information criterion 
+        L: likelihood
+        k: model parameter number
+        n: data sample size 
+        """
+        params = [self.sgram_params['all'][i]['popt'] for i in range(1, bf_S1T2_c1.comp_num + 1)][0]
+        lnL = self.lnlk(params)
+        return -2 * lnL + k * np.log(n) 
+        #return -2*np.log(L) + k * np.log(n) 
+        
