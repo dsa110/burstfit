@@ -24,25 +24,27 @@ def gauss(x, S, mu, sigma):
         -(1 / 2) * ((x - mu) / sigma) ** 2
     )
 
-def gauss2(x, S1, mu1, sigma1, S2, mu2, sigma2):
-    """
-    Gaussian function with area S
+# def gauss2(x, S1, mu1, sigma1, S2, mu2, sigma2):
+#     """
+#     Gaussian function with area S
 
-    Args:
-        x: input array to evaluate the function
-        S: Area of the gaussian
-        mu: mean of the gaussian
-        sigma: sigma of the gaussian
+#     Args:
+#         x: input array to evaluate the function
+#         S: Area of the gaussian
+#         mu: mean of the gaussian
+#         sigma: sigma of the gaussian
 
-    Returns:
+#     Returns:
 
-    """
-    return (S1 / (np.sqrt(2 * np.pi) * sigma1)) * np.exp(
-        -(1 / 2) * ((x - mu1) / sigma1) ** 2) + 
-        (S2 / (np.sqrt(2 * np.pi) * sigma2)) * np.exp(
-        -(1 / 2) * ((x - mu2) / sigma2) ** 2)
-
+#     """
+#     return ((S1 / (np.sqrt(2 * np.pi) * sigma1)) * np.exp(
+#         -(1 / 2) * ((x - mu1) / sigma1) ** 2) + 
+#         (S2 / (np.sqrt(2 * np.pi) * sigma2)) * np.exp(
+#         -(1 / 2) * ((x - mu2) / sigma2) ** 2))
     
+    
+
+
 
 
 def gauss_2d(x, amplitude, x0, y0, sigma_x, sigma_y, offset, theta):

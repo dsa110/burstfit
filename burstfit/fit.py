@@ -8,7 +8,7 @@ from burstfit.curvefit import CurveFit
 from burstfit.mcmc import MCMC
 from burstfit.utils.math import tests, transform_parameters
 from burstfit.utils.plotter import plot_1d_fit, plot_2d_fit
-from burstfit.utils.functions import model_free_4, model_free
+from burstfit.utils.functions import model_free_4, model_free, model_free_normalized_4 
 
 logger = logging.getLogger(__name__)
 
@@ -417,13 +417,14 @@ class BurstFit:
         print(ydata)
         
         if self.sgram_model.spectra_model.function == model_free_4:
-            c1, c2, c3, c4 = ydata
+            c0, c1, c2, c3 = ydata
             err = np.zeros(len(ydata))
-            self.spectra_params[self.comp_num] = {"popt": list([c1, c2, c3, c4]), "perr": err}
+            self.spectra_params[self.comp_num] = {"popt": list([c0, c1, c2, c3]), "perr": err}
 
-            #c1, c2, c3, c4 = ydata
-            #err = np.zeros(len(ydata) - 1)
-            #self.spectra_params[self.comp_num] = {"popt": list([c1, c2, c3]), "perr": err} # c4 degenerat
+        elif self.sgram_model.spectra_model.function == model_free_normalized_4:
+            c0, c1, c2, c3 = ydata
+            err = np.zeros(len(ydata) - 1)
+            self.spectra_params[self.comp_num] = {"popt": list([c0, c1, c2]), "perr": err} # c3 degenerat
         
         elif self.sgram_model.spectra_model.function == model_free:
             c = ydata
@@ -601,45 +602,65 @@ class BurstFit:
                 "On pulse region looks like noise. Check candidate parameters"
             )
 
-        
-        while self.ncomponents < max_ncomp:
-            if np.any(profile_bounds):
-                logger.warning(
-                    f"Input profile bounds detected. Using them for component {self.comp_num}"
+        if fix_ncomp: 
+            while self.ncomponents < ncomp:
+                if np.any(profile_bounds):
+                    logger.warning(
+                        f"Input profile bounds detected. Using them for component {self.comp_num}"
+                    )
+                if np.any(spectra_bounds):
+                    logger.warning(
+                        f"Input spectra bounds detected. Using them for component {self.comp_num}"
+                    )
+                self.fitcycle(
+                    plot=plot,
+                    profile_bounds=profile_bounds,
+                    spectra_bounds=spectra_bounds,
+                    sgram_bounds=sgram_bounds,
                 )
-            if np.any(spectra_bounds):
-                logger.warning(
-                    f"Input spectra bounds detected. Using them for component {self.comp_num}"
-                )
-            self.fitcycle(
-                plot=plot,
-                profile_bounds=profile_bounds,
-                spectra_bounds=spectra_bounds,
-                sgram_bounds=sgram_bounds,
-            )
-            test_res = self.run_tests
-            if test_res and not fix_ncomp:
-                logger.info(
-                    "On pulse residual looks like noise. "
-                    "Terminating individual component fitting."
-                )
-                break
+                self.comp_num += 1 
             
-            self.comp_num += 1
+            if self.comp_num > ncomp:
+                logger.info(
+                    "Fixed component exceeded. "
+                    "Terminated individual component fitting."
+                )
+                self.comp_num -= 1
 
-        if self.comp_num > max_ncomp and not fix_ncomp:
-            logger.info(
-                "Max number of components reached. "
-                "Terminated individual component fitting."
-            )
-            self.comp_num -= 1
         
-        if self.comp_num > ncomp and fix_ncomp:
-            logger.info(
-                "Fixed component reached. "
-                "Terminated individual component fitting."
-            )
-            self.comp_num -= 1
+        else:
+            while self.ncomponents < max_ncomp:
+                if np.any(profile_bounds):
+                    logger.warning(
+                        f"Input profile bounds detected. Using them for component {self.comp_num}"
+                    )
+                if np.any(spectra_bounds):
+                    logger.warning(
+                        f"Input spectra bounds detected. Using them for component {self.comp_num}"
+                    )
+                self.fitcycle(
+                    plot=plot,
+                    profile_bounds=profile_bounds,
+                    spectra_bounds=spectra_bounds,
+                    sgram_bounds=sgram_bounds,
+                )
+                test_res = self.run_tests
+                if test_res:
+                    logger.info(
+                        "On pulse residual looks like noise. "
+                        "Terminating individual component fitting."
+                    )
+                    break
+
+                self.comp_num += 1
+
+            if self.comp_num > max_ncomp:
+                logger.info(
+                    "Max number of components exceeded. "
+                    "Terminated individual component fitting."
+                )
+                self.comp_num -= 1
+        
 
         if self.ncomponents > 1:
             logger.info(

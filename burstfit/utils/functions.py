@@ -139,7 +139,7 @@ def pulse_fn(t, S, mu, sigma, tau):
         return np.zeros(len(t))
     if sigma / tau > 6:
         p = gauss(t, S, mu, sigma)
-        print("sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+        #print("sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
     else:
         A = S / (2 * tau)
         B = np.exp((1 / 2) * (sigma / tau) ** 2)
@@ -262,14 +262,14 @@ def model_free_4(x, c0, c1, c2, c3):
     """
     return np.array([c0, c1, c2, c3])
 
-# def model_free_4(x, c1, c2, c3):
-#     """
-#     No model. 4 channels
-#     returns a constant for each channel x.
-#     c: array of length(x) 
-#     """
-#     c4 = 2 * (1 - 0.5 * c1 - c2 - c3)
-#     return np.array([c1, c2, c3, c4])
+def model_free_normalized_4(x, c0, c1, c2):
+    """
+    No model. 4 channels
+    returns a constant for each channel x.
+    c: array of length(x) 
+    """
+    c3 = 2 * (1 - 0.5 * c0 - c1 - c2)
+    return np.array([c0, c1, c2, c3])
 
 
 def power_law(x, alpha, x0):
