@@ -3,6 +3,7 @@
 import logging
 
 import numpy as np
+from scipy import stats
 
 from burstfit.curvefit import CurveFit
 from burstfit.mcmc import MCMC
@@ -78,6 +79,7 @@ class BurstFit:
         self.param_names = None
         self.metadata = None
         self.reduced_chi_sq = None
+        self.p_value = None 
         self.mask = mask
         self.residual_std = None
         self.mcmcfit = mcmcfit
@@ -238,8 +240,10 @@ class BurstFit:
         self.initial_spectrafit(plot=plot, bounds=spectra_bounds)
         _ = self.sgram_params.pop("all", None)
         self.sgram_fit(plot=plot, bounds=sgram_bounds)
-        self.reduced_chi_sq = self.calc_redchisq()
+        self.reduced_chi_sq, self.p_value = self.calc_redchisq()
+        
 
+        
     def initial_profilefit(self, plot=False, bounds=[]):
         """
         Perform initial profile fit on the pulse.
@@ -856,7 +860,14 @@ class BurstFit:
             data_size - self.ncomponents * len(self.param_names)
         )
         logger.info(f"Reduced chi-square value of fit is: {reduced_chi_squared}")
-        return reduced_chi_squared
+        
+        dof = data_size - self.ncomponents * len(self.param_names)  
+        p_value = 1 - stats.chi2.cdf(chi_squared, dof)
+        
+        return reduced_chi_squared, p_value 
+    
+
+        
     
 #     def BIC(L, k, n):
 #         """

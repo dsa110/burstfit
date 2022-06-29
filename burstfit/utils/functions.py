@@ -171,7 +171,7 @@ def pulse_fn2(t, S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2):
         return np.zeros(len(t))
     if sigma1 / tau1 > 6:
         p1 = gauss(t, S1, mu1, sigma1)
-        print("comp 1: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+        #print("comp 1: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
     else:
         A = S1 / (2 * tau1)
         B = np.exp((1 / 2) * (sigma1 / tau1) ** 2)
@@ -183,7 +183,7 @@ def pulse_fn2(t, S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2):
         
     if sigma2 / tau2 > 6:
         p2 = gauss(t, S2, mu2, sigma2)
-        print("comp 2: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+        #print("comp 2: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
     else:
         A = S2 / (2 * tau2)
         B = np.exp((1 / 2) * (sigma2 / tau2) ** 2)
