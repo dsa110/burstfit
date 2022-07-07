@@ -3,11 +3,7 @@
 
 # In[1]:
 
-import import_ipynb
-from pathlib import Path
-import BurstFit_paper_template as paper_fit
-
-from burstfit.fit import real_time_burstfit
+from burstfit.BurstFit_paper_template import real_time_burstfit
 import numpy as np
 
 
