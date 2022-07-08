@@ -61,6 +61,7 @@ def real_time_burstfit(candidate, path_to_fil_file, snr_heimdall, dm_heimdall, w
     print(dict_burstfit)
 
     if save_plot:
+        print(f'Making directory for burstfit plot of {candidate}')
         save_plot_dir = "/dataz/dsa110/operations/candidates/" + candidate + "/other"
         Path(save_plot_dir).mkdir(parents=True, exist_ok=True)
 
