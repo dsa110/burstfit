@@ -2,6 +2,7 @@ import glob
 import re
 
 from setuptools import setup, find_packages
+from dsautils.version import get_git_version
 
 with open("requirements.txt") as f:
     required = f.read().splitlines()
@@ -9,10 +10,11 @@ with open("requirements.txt") as f:
 with open("README.md", "r") as f:
     long_description = f.read()
 
-with open("burstfit/__init__.py", "r") as f:
-    vf = f.read()
+#with open("burstfit/__init__.py", "r") as f:
+#    vf = f.read()
+#version = re.search(r"^_*version_* = ['\"]([^'\"]*)['\"]", vf, re.M).group(1)
 
-version = re.search(r"^_*version_* = ['\"]([^'\"]*)['\"]", vf, re.M).group(1)
+version=get_git_version()
 
 setup(
     name="burstfit",
