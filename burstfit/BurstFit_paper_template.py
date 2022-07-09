@@ -54,8 +54,8 @@ def real_time_burstfit(candidate, path_to_fil_file, snr_heimdall, dm_heimdall, w
         "bf1_start_bins": bin_num, # already converted to voltage resolution
         "bf1_dm":dm_fit, 
         "bf1_dm_stddev": dm_fit_err,
-        "bf1_reduced_chisq": bf_S1T2_c1.reduced_chi_sq,
-        "bf1_pvalue": bf_S1T2_c1.p_value
+        "bf1_reduced_chisq": float(bf_S1T2_c1.reduced_chi_sq),
+        "bf1_pvalue": float(bf_S1T2_c1.p_value)
     }
     
     print(dict_burstfit)
