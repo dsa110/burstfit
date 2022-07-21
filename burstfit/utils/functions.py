@@ -2,7 +2,7 @@ import logging
 
 import numpy as np
 from scipy import special
-from burstfit.utils.astro import dedisperse, finer_dispersion_correction
+from burstfit.utils.astro import dedisperse, finer_dispersion_correction, dm_smearing
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,53 @@ def gauss2(x, S1, mu1, sigma1, S2, mu2, sigma2):
         -(1 / 2) * ((x - mu1) / sigma1) ** 2) + 
         (S2 / (np.sqrt(2 * np.pi) * sigma2)) * np.exp(
         -(1 / 2) * ((x - mu2) / sigma2) ** 2))
+
+
+def gauss3(x, S1, mu1, sigma1, S2, mu2, sigma2, S3, mu3, sigma3):
+    """
+    Gaussian function with area S
+
+    Args:
+        x: input array to evaluate the function
+        S: Area of the gaussian
+        mu: mean of the gaussian
+        sigma: sigma of the gaussian
+
+    Returns:
+
+    """
+    return ((S1 / (np.sqrt(2 * np.pi) * sigma1)) * np.exp(
+        -(1 / 2) * ((x - mu1) / sigma1) ** 2) + 
+        (S2 / (np.sqrt(2 * np.pi) * sigma2)) * np.exp(
+        -(1 / 2) * ((x - mu2) / sigma2) ** 2) + 
+        (S3 / (np.sqrt(2 * np.pi) * sigma3)) * np.exp(
+        -(1 / 2) * ((x - mu3) / sigma3) ** 2))
+
+
+
+def gauss4(x, S1, mu1, sigma1, S2, mu2, sigma2, S3, mu3, sigma3, S4, mu4, sigma4):
+    """
+    Gaussian function with area S
+
+    Args:
+        x: input array to evaluate the function
+        S: Area of the gaussian
+        mu: mean of the gaussian
+        sigma: sigma of the gaussian
+
+    Returns:
+
+    """
+    return ((S1 / (np.sqrt(2 * np.pi) * sigma1)) * np.exp(
+        -(1 / 2) * ((x - mu1) / sigma1) ** 2) + 
+        (S2 / (np.sqrt(2 * np.pi) * sigma2)) * np.exp(
+        -(1 / 2) * ((x - mu2) / sigma2) ** 2) + 
+        (S3 / (np.sqrt(2 * np.pi) * sigma3)) * np.exp(
+        -(1 / 2) * ((x - mu3) / sigma3) ** 2) + 
+        (S4 / (np.sqrt(2 * np.pi) * sigma4)) * np.exp(
+        -(1 / 2) * ((x - mu4) / sigma4) ** 2))
+
+
 
     
 def gauss_2d(x, amplitude, x0, y0, sigma_x, sigma_y, offset, theta):
@@ -195,6 +242,8 @@ def pulse_fn2(t, S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2):
         
     return p1 + p2 
 
+# pulse_fn3
+# pulse_fn4
 
 def pulse_fn_vec(t, S, mu, sigma, tau):
     """
@@ -345,6 +394,15 @@ def sgram_fn(
         dedispersed_model, delay_time, delay_bins, tsamp
     )
     model_final = dedispersed_model_corrected * spectra_from_fit[:, None]
+    
+    
+    # add dm smearing due to non-zero frequency channel width  
+    dedispersed_model_corrected_dm_smeared = dm_smearing(
+        dedispersed_model_corrected, tsamp, dm, freqs, foff
+    )
+        
+    #model_final = dedispersed_model_corrected_dm_smeared * spectra_from_fit[:, None]
+    
     return model_final
 
 

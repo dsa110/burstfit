@@ -1,9 +1,11 @@
 import numpy as np
+from scipy import signal
 
 
 def dedisperse(data, dm, tsamp, freqs):
     """
     Function to dedisperse the data
+    Looks like disperse, not dedisperse? 
 
     Args:
         data: Frequency-time array to dedisperse
@@ -32,6 +34,7 @@ def dedisperse(data, dm, tsamp, freqs):
     return dedispersed, delay_bins, delay_time
 
 
+
 def finer_dispersion_correction(dedispersed_model, delay_time, delay_bins, tsamp):
     """
     Function to correct for dispersion within a time sample.
@@ -58,6 +61,27 @@ def finer_dispersion_correction(dedispersed_model, delay_time, delay_bins, tsamp
             l = np.correlate(dedispersed_model[i, :], [r, 1 - r], mode="same")
         dedispersed_model_corrected[i] = l
     return dedispersed_model_corrected
+
+
+
+def dm_smearing(dedispersed_model_corrected, tsamp, dm, freqs, foff):
+    """
+    model DM smearings in each channel due to non-zero frequency resolution in each channel. 
+    foff: filterbank frequency resolution
+    freqs: frequencies of each channel after binning 
+    """
+    
+    dedispersed_model_corrected_dm_smeared = np.zeros(dedispersed_model_corrected.shape)
+    
+    for ii in range(len(freqs)):
+        w_DM = 4148808.0 * 2 * dm * foff / (freqs[ii]) ** 3 / 1000 
+        window_time = signal.windows.gaussian(51, std = w_DM)
+        window_bins = np.round(window_time / tsamp).astype("int64")
+        #if window_bins > 0:
+        dedispersed_model_corrected_dm_smeared[ii, :] = signal.convolve(dedispersed_model_corrected[ii, :], window_bins, mode = "same") / sum(window_bins)
+        
+    
+    return dedispersed_model_corrected_dm_smeared 
 
 
 def radiometer(tsys, gain, bw, w):
