@@ -52,6 +52,7 @@ def prepare_bd(candidate, dm_heimdall, width_heimdall, snr_heimdall, mask_chans=
 
 
 def Bin_profile(data_t, bin_size):
+    print('data_t', data_t)
 
     data_t_binned = np.array([])
     
@@ -95,6 +96,7 @@ def prepare_burst_data(filterbank, fil_file_dedispersed, candidate, bd_heimdall,
 
     bin_size = int(bd_heimdall.tsamp / bd.tsamp) 
     if bin: # bin profile to compare plots 
+        print('data_burst.mean(0), data_burst.mean(0)', data_burst.mean(0), len(data_burst.mean(0)))
         data_t_binned, bin_size = Bin_profile(data_burst.mean(0), bin_size) 
     
         if plot:
@@ -329,22 +331,6 @@ def Dedisperse_data_profile(bf, fil_file, width, nfreq = 4, ndm = 64):
     return data, dm_fit
 
 
-def Bin_profile(data, bin_size):
-    data_t = data.mean(0)
-    data_t_binned = np.array([])
-    
-    if bin_size == 1:
-        data_t_binned = data_t
-    elif bin_size > 1: 
-        for i in range(0, len(data_t), bin_size):
-            bin_value = np.sum(data_t[i : i + bin_size])
-            data_t_binned = np.append(data_t_binned, bin_value)
-    else: 
-        print("bin_size is negative.")
-    
-    return data_t_binned 
-        
-
 def Snr(data_t_bin):
     signal = np.max(data_t_bin)
     peak_idx = np.argmax(data_t_bin)
@@ -365,7 +351,7 @@ def Compare_bins(data, bd, width_samp_fine_pow2, tsamp_fine = 32.768e-6, plot = 
         width_fine_arr = np.append(width_fine_arr, width_fine)
         width_filterbank = int(width_fine * tsamp_fine / bd.tsamp)
 
-        data_t_binned = Bin_profile(data, width_filterbank)
+        data_t_binned = Bin_profile(data.mean(0), width_filterbank)
         snr = Snr(data_t_binned)
         snr_arr = np.append(snr_arr, snr)
 

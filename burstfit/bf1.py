@@ -5,7 +5,7 @@
 
 import import_ipynb
 from pathlib import Path
-import BurstFit_paper_template as paper_fit
+import burstfit.BurstFit_paper_template as paper_fit
 
 from burstfit.utils.functions import pulse_fn, sgram_fn_vec, sgram_fn, gauss, gauss_norm, model_free_4, model_free_normalized_4, power_law # pulse_fn_vec  
 from burstfit.utils.plotter import plot_fit_results
