@@ -421,7 +421,7 @@ def Compare_bins(data, bd, width_samp_fine_pow2, tsamp_fine = 32.768e-6, plot = 
         width_fine_arr = np.append(width_fine_arr, width_fine)
         width_filterbank = int(width_fine * tsamp_fine / bd.tsamp)
 
-        data_t_binned = Bin_profile(data.mean(0), width_filterbank)
+        data_t_binned = Bin_profile(data.mean(0), width_filterbank)[0]
         snr = Snr(data_t_binned)
         snr_arr = np.append(snr_arr, snr)
 
