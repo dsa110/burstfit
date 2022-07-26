@@ -104,7 +104,6 @@ def prepare_bd(candidate, dm_heimdall, width_heimdall, snr_heimdall, mask_chans=
 
 
 def Bin_profile(data_t, bin_size):
-    print('data_t', data_t)
 
     data_t_binned = np.array([])
     
@@ -128,9 +127,11 @@ def prepare_burst_data(filterbank, fil_file_dedispersed, candidate, bd_heimdall,
     """
     # save the de-dispersed data to file (de-dispersion takes long time)
     if dedisperse:
+        print("dedisperse...") 
         data = ff.proc_cand_fil(filterbank, bd.dm, bd.width, nfreq_plot=nfreq, ndm=64)[0]
         np.save(fil_file_dedispersed, data, allow_pickle=False)
     else: 
+        print("Reading from file" + fil_file_dedispersed + ".npy")
         data = np.load(fil_file_dedispersed + ".npy") 
     
     # heimdall burst starts at 500 ms, voltage removed edge channels so burst dedispersed to a later time
@@ -144,14 +145,18 @@ def prepare_burst_data(filterbank, fil_file_dedispersed, candidate, bd_heimdall,
     t_burst = [i * bd.tsamp * 1e3 for i in range(i_low, i_high)]
     data_burst = data[:, i_low: i_high] 
     data_t_unbinned = data_burst.mean(0)
+    print("len(t_burst), np.shape(data_burst), i_low, i_high", len(t_burst), np.shape(data_burst), i_low, i_high)
+    print("np.shape(data)", np.shape(data))
     
 
     bin_size = int(bd_heimdall.tsamp / bd.tsamp) 
     if bin: # bin profile to compare plots 
-        print('data_burst.mean(0), data_burst.mean(0)', data_burst.mean(0), len(data_burst.mean(0)))
-        data_t_binned, bin_size = Bin_profile(data_burst.mean(0), bin_size) 
+        data_t_binned, bin_size = Bin_profile(data_t_unbinned, bin_size) 
     
         if plot:
+            print("len(t_burst[::bin_size]), len(data_t_binned): %d, %d"%(len(t_burst[::bin_size]), len(data_t_binned)))
+            print(np.shape(data_burst), )
+            
             fig1, ax1 = plt.subplots(2, 2, figsize=(12, 8)) 
             ax1[0][0].plot(t_burst[::bin_size], data_t_binned)
             ax1[0][0].set_xlabel('Time (ms) (binned %d to match Heimdall resolution)'%bin_size)
@@ -197,7 +202,7 @@ def prepare_burst_data_heimdall_only(filterbank, fil_file_dedispersed, candidate
     i_low = int(t_chop_center_s / bd_heimdall.tsamp - t_chop_width * bd_heimdall.width)
     i_high = int(t_chop_center_s / bd_heimdall.tsamp + t_chop_width * bd_heimdall.width)
     
-    print(t_chop_center_s, bd_heimdall.tsamp, t_chop_width, bd_heimdall.width, i_low, i_high)
+    #print(t_chop_center_s, bd_heimdall.tsamp, t_chop_width, bd_heimdall.width, i_low, i_high)
     
     t_burst = [i * bd_heimdall.tsamp * 1e3 for i in range(i_low, i_high)]
     data_burst = data[:, i_low: i_high] 
@@ -205,7 +210,7 @@ def prepare_burst_data_heimdall_only(filterbank, fil_file_dedispersed, candidate
     
     
 
-    print(i_low, i_high, len(t_burst), np.shape(data_burst))
+    #print(i_low, i_high, len(t_burst), np.shape(data_burst))
     
     if plot:
         fig1, ax1 = plt.subplots(1, 2, figsize=(12, 4)) 
@@ -328,6 +333,19 @@ def save_results(file, candidate, bf_name):
         print("\n", file = f)
     
     return 0
+
+
+####################################################
+####################################################
+# for spectrum
+####################################################
+####################################################
+
+def find_param_value(bf, param_name, ncomp = 1):
+    ind = np.argwhere(np.array(bf.param_names) == param_name)[0][0]
+    param_value = bf.mcmc_params[ncomp]['popt'][ind]
+    
+    return param_value
 
 
 def autocorrelation():
