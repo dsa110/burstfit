@@ -125,6 +125,7 @@ def plot_2d_fit(
     axes[1, 1].plot(
         ts, diff.mean(0), c="r", alpha=0.7, linestyle="dotted", label="Residual"
     )
+    #axes[1, 1].annotate(name, xy=(0.01, 0.99),xycoords='axes fraction', fontsize=20, horizontalalignment='left', verticalalignment='top')
     axes[1, 1].legend()
     axes[1, 1].set_title("Profiles")
     axes[1, 1].set_xlabel("Time (ms)")
@@ -133,9 +134,10 @@ def plot_2d_fit(
         fig.suptitle(title)
     plt.tight_layout()
     if save:
-        if not outdir:
-            outdir = os.getcwd()
-        plt.savefig(outdir + "/" + outname + ".png", bbox_inches="tight", dpi=300)
+        plt.savefig(outname, bbox_inches="tight", dpi=300)
+#         if not outdir:
+#             outdir = os.getcwd()
+#         plt.savefig(outdir + "/" + outname + ".png", bbox_inches="tight", dpi=300)
     if show:
         plt.show()
 
@@ -299,7 +301,7 @@ def plot_me(datar, xlabel=None, ylabel=None, title=None):
     return plt.show()
 
 
-def plot_mcmc_results(samples, name, param_starts, labels, save=False):
+def plot_mcmc_results(samples, name, fig_title, param_starts, labels, save=False):
     """
     Save corner plot of MCMC results
 
@@ -322,7 +324,7 @@ def plot_mcmc_results(samples, name, param_starts, labels, save=False):
         ax.set_ylabel(labels[i])
         ax.yaxis.set_label_coords(-0.1, 0.5)
     axes[-1].set_xlabel("step number")
-    fig.suptitle(name)
+    fig.suptitle(fig_title)
 
     plt.figure()
     fig = corner.corner(
@@ -331,10 +333,10 @@ def plot_mcmc_results(samples, name, param_starts, labels, save=False):
         bins=20,
         truths=param_starts,
         quantiles=[0.16, 0.5, 0.84],
-        show_titles=True,
+        show_titles=False,
         title_kwargs={"fontsize": 12},
     )
-    fig.suptitle(name)
+    fig.suptitle(fig_title)
     plt.tight_layout()
     if save:
         fig.savefig(f"{name}_corner.png", bbox_inches="tight")

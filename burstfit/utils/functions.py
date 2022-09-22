@@ -242,8 +242,137 @@ def pulse_fn2(t, S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2):
         
     return p1 + p2 
 
-# pulse_fn3
-# pulse_fn4
+
+def pulse_fn3(t, S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2, S3, mu3, sigma3, tau3):
+    """
+
+    Function of the pulse profile: Gaussian convolved with an exponential tail
+    (see https://arxiv.org/pdf/1404.6593.pdf, equation 4, for more details)
+
+    Args:
+        t: input array
+        S: Area of the pulse (fluence)
+        mu: mean of gaussian
+        sigma: sigma of gaussian
+        tau: scattering timescale
+
+    Returns:
+
+    """
+    if (np.array([S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2]) < 0).sum() > 0:
+        return np.zeros(len(t))
+    if sigma1 / tau1 > 6:
+        p1 = gauss(t, S1, mu1, sigma1)
+        #print("comp 1: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+    else:
+        A = S1 / (2 * tau1)
+        B = np.exp((1 / 2) * (sigma1 / tau1) ** 2)
+        ln_C = -1 * (t - mu1) / tau1
+        D = 1 + special.erf((t - (mu1 + (sigma1 ** 2) / tau1)) / (sigma1 * np.sqrt(2)))
+        m0 = D == 0
+        ln_C[m0] = 0
+        p1 = A * D * B * np.exp(ln_C)
+        
+    if sigma2 / tau2 > 6:
+        p2 = gauss(t, S2, mu2, sigma2)
+        #print("comp 2: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+    else:
+        A = S2 / (2 * tau2)
+        B = np.exp((1 / 2) * (sigma2 / tau2) ** 2)
+        ln_C = -1 * (t - mu2) / tau2
+        D = 1 + special.erf((t - (mu2 + (sigma2 ** 2) / tau2)) / (sigma2 * np.sqrt(2)))
+        m0 = D == 0
+        ln_C[m0] = 0
+        p2 = A * D * B * np.exp(ln_C)
+    
+
+    if sigma3 / tau3 > 6:
+        p3 = gauss(t, S3, mu3, sigma3)
+        #print("comp 2: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+    else:
+        A = S3 / (2 * tau3)
+        B = np.exp((1 / 2) * (sigma3 / tau3) ** 2)
+        ln_C = -1 * (t - mu3) / tau3
+        D = 1 + special.erf((t - (mu3 + (sigma3 ** 2) / tau3)) / (sigma3 * np.sqrt(2)))
+        m0 = D == 0
+        ln_C[m0] = 0
+        p3 = A * D * B * np.exp(ln_C)
+        
+        
+    return p1 + p2 + p3 
+
+
+
+def pulse_fn4(t, S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2, S3, mu3, sigma3, tau3, S4, mu4, sigma4, tau4):
+    """
+
+    Function of the pulse profile: Gaussian convolved with an exponential tail
+    (see https://arxiv.org/pdf/1404.6593.pdf, equation 4, for more details)
+
+    Args:
+        t: input array
+        S: Area of the pulse (fluence)
+        mu: mean of gaussian
+        sigma: sigma of gaussian
+        tau: scattering timescale
+
+    Returns:
+
+    """
+    if (np.array([S1, mu1, sigma1, tau1, S2, mu2, sigma2, tau2]) < 0).sum() > 0:
+        return np.zeros(len(t))
+    if sigma1 / tau1 > 6:
+        p1 = gauss(t, S1, mu1, sigma1)
+        #print("comp 1: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+    else:
+        A = S1 / (2 * tau1)
+        B = np.exp((1 / 2) * (sigma1 / tau1) ** 2)
+        ln_C = -1 * (t - mu1) / tau1
+        D = 1 + special.erf((t - (mu1 + (sigma1 ** 2) / tau1)) / (sigma1 * np.sqrt(2)))
+        m0 = D == 0
+        ln_C[m0] = 0
+        p1 = A * D * B * np.exp(ln_C)
+        
+    if sigma2 / tau2 > 6:
+        p2 = gauss(t, S2, mu2, sigma2)
+        #print("comp 2: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+    else:
+        A = S2 / (2 * tau2)
+        B = np.exp((1 / 2) * (sigma2 / tau2) ** 2)
+        ln_C = -1 * (t - mu2) / tau2
+        D = 1 + special.erf((t - (mu2 + (sigma2 ** 2) / tau2)) / (sigma2 * np.sqrt(2)))
+        m0 = D == 0
+        ln_C[m0] = 0
+        p2 = A * D * B * np.exp(ln_C)
+    
+
+    if sigma3 / tau3 > 6:
+        p3 = gauss(t, S3, mu3, sigma3)
+        #print("comp 2: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+    else:
+        A = S3 / (2 * tau3)
+        B = np.exp((1 / 2) * (sigma3 / tau3) ** 2)
+        ln_C = -1 * (t - mu3) / tau3
+        D = 1 + special.erf((t - (mu3 + (sigma3 ** 2) / tau3)) / (sigma3 * np.sqrt(2)))
+        m0 = D == 0
+        ln_C[m0] = 0
+        p3 = A * D * B * np.exp(ln_C)
+
+    if sigma4 / tau4 > 6:
+        p4 = gauss(t, S4, mu4, sigma4)
+        #print("comp 2: sigma / tau > 6, will use gauss profile gauss(t, S, mu, sigma) without tau.")
+    else:
+        A = S4 / (2 * tau4)
+        B = np.exp((1 / 2) * (sigma4 / tau4) ** 2)
+        ln_C = -1 * (t - mu4) / tau4
+        D = 1 + special.erf((t - (mu4 + (sigma4 ** 2) / tau4)) / (sigma4 * np.sqrt(2)))
+        m0 = D == 0
+        ln_C[m0] = 0
+        p4 = A * D * B * np.exp(ln_C)        
+        
+        
+    return p1 + p2 + p3 + p4
+
 
 def pulse_fn_vec(t, S, mu, sigma, tau):
     """
@@ -317,8 +446,40 @@ def model_free_normalized_4(x, c0, c1, c2):
     returns a constant for each channel x.
     c: array of length(x) 
     """
-    c3 = 2 * (1 - 0.5 * c0 - c1 - c2)
+    #c3 = max(0.0, 2 * (1 - 0.5 * c0 - c1 - c2))
+    #print "c3 = max(0.0, 2 * (1 - 0.5 * c0 - c1 - c2)) = ", c3
+    
+    c3 = max(0.0, 1 - c0 - c1 - c2)
+    
     return np.array([c0, c1, c2, c3])
+
+
+def model_free_normalized_8(x, c0, c1, c2, c3, c4, c5, c6):
+    """
+    No model. 4 channels
+    returns a constant for each channel x.
+    c: array of length(x) 
+    """
+    #c3 = max(0.0, 2 * (1 - 0.5 * c0 - c1 - c2))
+    #print "c3 = max(0.0, 2 * (1 - 0.5 * c0 - c1 - c2)) = ", c3
+    
+    c7 = max(0.0, 1 - c0 - c1 - c2- c3- c4- c5- c6)
+    
+    return np.array([c0, c1, c2, c3, c4, c5, c6, c7])
+
+
+def model_free_normalized_16(x, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14):
+    """
+    No model. 4 channels
+    returns a constant for each channel x.
+    c: array of length(x) 
+    """
+    #c3 = max(0.0, 2 * (1 - 0.5 * c0 - c1 - c2))
+    #print "c3 = max(0.0, 2 * (1 - 0.5 * c0 - c1 - c2)) = ", c3
+    
+    c15 = max(0.0, 1 - c0 - c1 - c2- c3- c4- c5- c6- c7- c8- c9- c10- c11- c12- c13- c14)
+    
+    return np.array([c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15])
 
 
 def power_law(x, alpha, x0):
@@ -393,7 +554,7 @@ def sgram_fn(
     dedispersed_model_corrected = finer_dispersion_correction(
         dedispersed_model, delay_time, delay_bins, tsamp
     )
-    model_final = dedispersed_model_corrected * spectra_from_fit[:, None]
+    #model_final = dedispersed_model_corrected * spectra_from_fit[:, None]
     
     
     # add dm smearing due to non-zero frequency channel width  
@@ -401,7 +562,7 @@ def sgram_fn(
         dedispersed_model_corrected, tsamp, dm, freqs, foff
     )
         
-    #model_final = dedispersed_model_corrected_dm_smeared * spectra_from_fit[:, None]
+    model_final = dedispersed_model_corrected_dm_smeared * spectra_from_fit[:, None]
     
     return model_final
 

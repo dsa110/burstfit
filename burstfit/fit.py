@@ -9,7 +9,7 @@ from burstfit.curvefit import CurveFit
 from burstfit.mcmc import MCMC
 from burstfit.utils.math import tests, transform_parameters
 from burstfit.utils.plotter import plot_1d_fit, plot_2d_fit
-from burstfit.utils.functions import model_free_4, model_free, model_free_normalized_4
+from burstfit.utils.functions import model_free_4, model_free, model_free_normalized_4, model_free_normalized_8, model_free_normalized_16 
 
 
 logger = logging.getLogger(__name__)
@@ -183,36 +183,52 @@ class BurstFit:
                 tau_width += self.profile_params[self.comp_num]["popt"][t_idx[0]]
             width = int(width)
             self.i0 = int(self.i0)
+            
         except (KeyError, AssertionError) as e:
             logger.warning(f"{e}")
             width = self.width
-            if self.comp_num == 1:
-                logger.warning(
-                    f"Making spectra using center bins. Could be inaccurate."
-                )
-                self.i0 = self.nt // 2
-            else:
-                logger.warning(
-                    f"Making spectra using profile argmax. Could be inaccurate."
-                )
-                self.i0 = np.argmax(self.ts)
+#             if self.comp_num == 1:
+#                 logger.warning(
+#                     f"Making spectra using center bins. Could be inaccurate."
+#                 )
+#                 self.i0 = self.nt // 2
+#             else:
+#                 logger.warning(
+#                     f"Making spectra using profile argmax. Could be inaccurate."
+#                 )
+#                 self.i0 = np.argmax(self.ts)
 
-        if width > 2:
-            start = self.i0 - width // 2
-            end = self.i0 + width // 2
-        else:
-            start = self.i0 - 1
-            end = self.i0 + 1
+            logger.warning(
+                f"Making spectra using profile argmax. Could be inaccurate."
+            )
+            self.i0 = np.argmax(self.ts)
+
+
+        print("make_spectra: use width =", width)
+#         if width > 2:
+#             start = self.i0 - width // 2
+#             end = self.i0 + width // 2
+#         else:
+#             start = self.i0 - 1
+#             end = self.i0 + 1
+        
+        start = self.i0 - int(width)
+        end = self.i0 + int(width)
+        
+        end += int(tau_width)
+        
         if start < 0:
             start = 0
         if end > self.nt:
             end = self.nt
-        end += int(tau_width)
-        logger.debug(f"Generating spectra from sample {start} to {end}")
+        
+        logger.info(f"Generating spectra from sample {start} to {end}")
         self.spectra = self.residual[:, start : end + 1].mean(-1)
 
         logger.debug(f"Normalising spectra to unit area.")
-        self.spectra = self.spectra / np.trapz(self.spectra)
+        #self.spectra = self.spectra / np.trapz(self.spectra)
+        self.spectra = self.spectra / sum(self.spectra)
+        #print("test: not normalizing spectrum")
 
     def fitcycle(
         self,
@@ -430,6 +446,16 @@ class BurstFit:
             c0, c1, c2, c3 = ydata
             err = np.zeros(len(ydata) - 1)
             self.spectra_params[self.comp_num] = {"popt": list([c0, c1, c2]), "perr": err} # c3 degenerat
+        
+        elif self.sgram_model.spectra_model.function == model_free_normalized_8:
+            c0, c1, c2, c3, c4, c5, c6, c7 = ydata
+            err = np.zeros(len(ydata) - 1)
+            self.spectra_params[self.comp_num] = {"popt": list([c0, c1, c2, c3, c4, c5, c6]), "perr": err} 
+            
+        elif self.sgram_model.spectra_model.function == model_free_normalized_16:
+            c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15 = ydata
+            err = np.zeros(len(ydata) - 1)
+            self.spectra_params[self.comp_num] = {"popt": list([c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14]), "perr": err} 
         
         elif self.sgram_model.spectra_model.function == model_free:
             c = ydata
@@ -704,8 +730,18 @@ class BurstFit:
         ncores=10,
         start_pos_dev=0.01,
         prior_range=0.5,
+        prior_c0 = 10,
+        prior_c1 = 10,
+        prior_c2 = 10,
+        prior_S = 5,
+        prior_S1 = 5,
+        prior_S2 = 5,
+        prior_S3 = 5,
+        prior_S4 = 5,
+        prior_DM = 5, 
         save_results=True,
         outname=None,
+        fig_title=None,
     ):
         """
         Runs MCMC using the final fit parameters.
@@ -744,8 +780,18 @@ class BurstFit:
             skip,
             start_pos_dev,
             prior_range,
+            prior_c0,
+            prior_c1,
+            prior_c2,
+            prior_S,
+            prior_S1,
+            prior_S2,
+            prior_S3,
+            prior_S4,
+            prior_DM, 
             ncores,
             outname,
+            fig_title,
             save_results,
         )
         self.mcmc.run_mcmc()
@@ -770,7 +816,7 @@ class BurstFit:
             self.mcmc.plot(save=save_results)
             self.mcmc.make_autocorr_plot(save=save_results)
             qs = np.quantile(self.mcmc.samples, [0.5], axis=0)
-            plot_2d_fit(self.sgram, self.model_from_params, qs[0], self.tsamp)
+            plot_2d_fit(self.sgram, self.model_from_params, qs[0], self.tsamp, title=fig_title, save=True, outname=outname+"_mcmc_fit_result.pdf")
         return self.mcmc
 
     def get_off_pulse_region(self):

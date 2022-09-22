@@ -26,6 +26,8 @@ class MCMC:
         skip: Number of samples to skip for burn-in
         start_pos_dev: Percent deviation for start position of the samples
         prior_range: Percent of initial guess to set as prior range
+        prior_c: Upper limit of initial guess for relative spectral amplitude in each channel 
+        prior_S: Upper limit of initial guess for fluence in each component 
         ncores: Number of CPUs to use
         outname: Name of output files
         save_results: Save MCMC samples to a file
@@ -42,8 +44,18 @@ class MCMC:
         skip=3000,
         start_pos_dev=0.01,
         prior_range=0.2,
+        prior_c0=10, 
+        prior_c1=10, 
+        prior_c2=10, 
+        prior_S = 5, 
+        prior_S1 = 5,
+        prior_S2 = 5, 
+        prior_S3 = 5, 
+        prior_S4 = 5, 
+        prior_DM = 5, 
         ncores=10,
         outname="mcmc_res",
+        fig_title=None,
         save_results=True,
     ):
         self.model_function = model_function
@@ -65,6 +77,15 @@ class MCMC:
         assert len(param_names) == len(initial_guess)
         self.param_names = param_names
         self.prior_range = prior_range
+        self.prior_c0 = prior_c0
+        self.prior_c1 = prior_c1
+        self.prior_c2 = prior_c2
+        self.prior_S = prior_S
+        self.prior_S1 = prior_S1
+        self.prior_S2 = prior_S2
+        self.prior_S3 = prior_S3
+        self.prior_S4 = prior_S4
+        self.prior_DM = prior_DM
         self.sgram = sgram
         self.std = np.std(sgram)
         self.nwalkers = nwalkers
@@ -75,6 +96,7 @@ class MCMC:
         self.sampler = None
         self.samples = None
         self.outname = outname
+        self.fig_title = fig_title
         self.save_results = save_results
         self.autocorr = None
         self.pos = None
@@ -170,6 +192,7 @@ class MCMC:
         self.pos = np.array(pos)
         return self
 
+    
     def set_priors(self):
         """
         Set priors for MCMC
@@ -177,9 +200,10 @@ class MCMC:
         Returns:
 
         """
-        logger.info("Setting priors for MCMC.")
+        logger.info("Setting priors for MCMC. Use prior_range = {self.prior_range}")
         self.max_prior = (1 + self.prior_range) * self.initial_guess
         self.min_prior = (1 - self.prior_range) * self.initial_guess
+      
 
         tau_idx = [i for i, t in enumerate(self.param_names) if "tau" in t]
         if len(tau_idx):
@@ -193,9 +217,86 @@ class MCMC:
 
         mu_f_idx = [i for i, t in enumerate(self.param_names) if "mu_f" in t]
         sigma_f_idx = [i for i, t in enumerate(self.param_names) if "sigma_f" in t]
+        
+        DM_idx = [i for i, t in enumerate(self.param_names) if "DM" in t]
+        c0_idx = [i for i, t in enumerate(self.param_names) if "c0" in t]
+        c1_idx = [i for i, t in enumerate(self.param_names) if "c1" in t]
+        c2_idx = [i for i, t in enumerate(self.param_names) if "c2" in t]
+        S1_idx = [i for i, t in enumerate(self.param_names) if "S1" in t]
+        S2_idx = [i for i, t in enumerate(self.param_names) if "S2" in t]
+        S3_idx = [i for i, t in enumerate(self.param_names) if "S1" in t]
+        S4_idx = [i for i, t in enumerate(self.param_names) if "S1" in t]
+
 
         nf, nt = self.sgram.shape
 
+        if len(DM_idx) > 0:
+            DM_range = 3
+            logger.info(
+                "Found DM in param_names. Setting its prior range to +- {self.prior_DM}"
+            )
+            self.min_prior[DM_idx] = self.initial_guess[DM_idx] - self.prior_DM
+            self.max_prior[DM_idx] = self.initial_guess[DM_idx] + self.prior_DM
+        
+        if len(c0_idx) > 0:
+            logger.info(
+                "Found c0 in param_names. Setting its min value of prior to 0." 
+                "Setting its max value to max(0, min(1.0, i)) for i in self.initial_guess[c0_idx] * self.prior_c0)])"
+            )
+            self.min_prior[c0_idx] = 0
+            print("c0_idx, self.initial_guess[c0_idx], self.prior_c0:", c0_idx, self.initial_guess[c0_idx], self.prior_c0)
+            print("self.initial_guess[c0_idx] * self.prior_c0: ", [self.initial_guess[c0_idx] * (1 + self.prior_c0)])
+            self.max_prior[c0_idx] = [max(0, min(1.0, i)) for i in self.initial_guess[c0_idx] * self.prior_c0]
+        
+        
+        if len(c1_idx) > 0:
+            logger.info(
+                "Found c1 in param_names. Setting its min value of prior to 0."
+                "Setting its max value to max(0, min(1.0, i)) for i in self.initial_guess[c1_idx] * self.prior_c1)])"
+            )
+            self.min_prior[c1_idx] = 0
+            self.max_prior[c1_idx] = [max(0, min(1.0, i)) for i in self.initial_guess[c1_idx] * self.prior_c1]
+        
+        
+        if len(c2_idx) > 0:
+            logger.info(
+                "Found c2 in param_names. Setting its min value of prior to 0."
+                "Setting its max value to max(0, min(1.0, i)) for i in self.initial_guess[c2_idx] * self.prior_c2)])"
+            )
+            self.min_prior[c2_idx] = 0
+            self.max_prior[c2_idx] = [max(0, min(1.0, i)) for i in self.initial_guess[c2_idx] * self.prior_c2]
+        
+        
+        if len(S1_idx) > 0:
+            logger.info(
+                "Found S1 in param_names. Setting its min value of prior to 0."
+            )
+            self.min_prior[S1_idx] = 0
+            self.max_prior[S1_idx] = self.initial_guess[S1_idx] * max(1, self.prior_S1)
+ 
+        if len(S2_idx) > 0:
+            logger.info(
+                "Found S2 in param_names. Setting its min value of prior to 0."
+            )
+            self.min_prior[S2_idx] = 0
+            self.max_prior[S2_idx] = self.initial_guess[S2_idx] * max(1, self.prior_S2) 
+
+        if len(S3_idx) > 0:
+            logger.info(
+                "Found S3 in param_names. Setting its min value of prior to 0."
+            )
+            self.min_prior[S3_idx] = 0
+            self.max_prior[S3_idx] = self.initial_guess[S3_idx] * max(1, self.prior_S3) 
+
+            
+        if len(S4_idx) > 0:
+            logger.info(
+                "Found S4 in param_names. Setting its min value of prior to 0."
+            )
+            self.min_prior[S4_idx] = 0
+            self.max_prior[S4_idx] = self.initial_guess[S4_idx] * max(1, self.prior_S4)  
+                
+        
         if len(tau_idx) > 0:
             logger.info(
                 "Found tau in param_names. Setting its min value of prior to 0."
@@ -221,8 +322,10 @@ class MCMC:
                 f"Found S and sigma_t in param_names. Setting its max value of prior to "
                 f"500*max(ts)*max_sigma_t_prior. Setting its min value of prior to 0."
             )
-            self.max_prior[S_idx] = 500 * np.max(self.sgram.sum(0)) * max_sigma_t
+            self.max_prior[S_idx] = 800 * np.max(self.sgram.sum(0)) * max_sigma_t
             self.min_prior[S_idx] = 0
+            
+        
 
         if len(mu_f_idx) > 0:
             logger.info(
@@ -237,6 +340,7 @@ class MCMC:
             )
             self.min_prior[sigma_f_idx] = 0
             self.max_prior[sigma_f_idx] = 5 * nf
+        
 
         return self
 
@@ -368,7 +472,7 @@ class MCMC:
         """
         logger.info("Plotting MCMC results.")
         plot_mcmc_results(
-            self.samples, self.outname, self.initial_guess, self.param_names, save
+            self.samples, self.outname, self.fig_title, self.initial_guess, self.param_names, save
         )
 
     def make_autocorr_plot(self, save=False):
