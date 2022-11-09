@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
-
-print("test install 09/18/22")
-
 from burstfit.fit import BurstFit
 from burstfit.data import BurstData
 from burstfit.model import Model, SgramModel
@@ -15,9 +8,8 @@ from scipy.optimize import curve_fit
 import math
 import matplotlib.pyplot as plt
 # use Liam's function to read in filterbank files 
-import sys
-sys.path.insert(1, '/home/ubuntu/gechen/software')
-import filplot_funcs_gc as ff
+
+from burstfit import filplot_funcs_gc as ff
 from pathlib import Path
 
 from burstfit.utils.functions import pulse_fn, sgram_fn, gauss, gauss_norm, model_free_4, model_free_normalized_4, power_law # pulse_fn_vec  
