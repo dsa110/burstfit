@@ -21,7 +21,7 @@ def real_time_burstfit(candidate, path_to_fil_file, snr_heimdall, dm_heimdall, w
                        plot = False
                       ): # datestring, beam, corr
 
-    fil_file_dedispersed = '/home/ubuntu/gechen/software/burstfit/fil_files_dedispersed/%s_%d_%s.txt'%(candidate, nfreq, str(voltage))
+    fil_file_dedispersed = './scratch/%s_%d_%s.txt'%(candidate, nfreq, str(voltage))
 
     bd_heimdall, fil_file_heimdall  = prepare_bd(candidate, dm_heimdall, width_heimdall, snr_heimdall, voltage=False, path_to_fil_file = path_to_fil_file) # datestring=datestring, beam=beam, corr=corr
 
@@ -72,7 +72,7 @@ def prepare_bd(candidate, dm_heimdall, width_heimdall, snr_heimdall, mask_chans=
                datestring=None, beam=None, corr=None, fil_file=None, voltage = False, 
                path_to_fil_file = None):
     if voltage: 
-        fil_file = '/home/ubuntu/vikram/scratch/' + candidate + '.fil'
+        fil_file = './scratch/' + candidate + '.fil'
     elif path_to_fil_file is not None:
         fil_file = path_to_fil_file 
     else : 
